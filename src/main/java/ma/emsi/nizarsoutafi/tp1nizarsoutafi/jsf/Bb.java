@@ -1,4 +1,4 @@
-package ma.emsi.nizarsoutafi.tp0nizarsoutafi.jsf;
+package ma.emsi.nizarsoutafi.tp1nizarsoutafi.jsf;
 
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
