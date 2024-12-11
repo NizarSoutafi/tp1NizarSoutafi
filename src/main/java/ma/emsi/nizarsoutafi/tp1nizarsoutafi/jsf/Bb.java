@@ -6,6 +6,8 @@ import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import ma.emsi.nizarsoutafi.tp1nizarsoutafi.llm.JsonUtilPourGemini;
+import ma.emsi.nizarsoutafi.tp1nizarsoutafi.llm.LlmInteraction;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -51,6 +53,15 @@ public class Bb implements Serializable {
     @Inject
     private FacesContext facesContext;
 
+    private String texteRequeteJson;
+
+    private String texteReponseJson;
+
+    private boolean debug;
+
+    @Inject
+    private JsonUtilPourGemini jsonUtilPourGemini;
+
     /**
      * Obligatoire pour un bean CDI (classe gérée par CDI).
      */
@@ -81,6 +92,29 @@ public class Bb implements Serializable {
         return reponse;
     }
 
+    public String getTexteReponseJson() {
+        return texteReponseJson;
+    }
+
+    public void setTexteReponseJson(String texteReponseJson) {
+        this.texteReponseJson = texteReponseJson;
+    }
+
+    public String getTexteRequeteJson() {
+        return texteRequeteJson;
+    }
+
+    public void setTexteRequeteJson(String texteRequeteJson) {
+        this.texteRequeteJson = texteRequeteJson;
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+    }
+
     /**
      * setter indispensable pour le textarea.
      *
@@ -98,7 +132,9 @@ public class Bb implements Serializable {
         this.conversation = new StringBuilder(conversation);
     }
 
-
+    public void toggleDebug() {
+        this.setDebug(!isDebug());
+    }
     /**
      * Envoie la question au serveur.
      * En attendant de l'envoyer à un LLM, le serveur fait un traitement quelconque, juste pour tester :
@@ -116,22 +152,30 @@ public class Bb implements Serializable {
             facesContext.addMessage(null, message);
             return null;
         }
-        String[] words = question.split(" ");
-        StringBuilder acronym = new StringBuilder("||");
+        // Entourer la réponse avec "||".
+        //this.reponse = "||";
+        // Si la conversation n'a pas encore commencé, ajouter le rôle système au début de la réponse
+        //if (this.conversation.isEmpty()) {
+        // Ajouter le rôle système au début de la réponse
+        //    this.reponse += systemRole.toUpperCase(Locale.FRENCH) + "\n";
+        // Invalide le bouton pour changer le rôle système
+        //    this.systemRoleChangeable = false;
+        //}
+        //this.reponse += question.toLowerCase(Locale.FRENCH) + "||";
 
-        for (String word : words) {
-            if (!word.isBlank()) {
-                acronym.append(word.charAt(0)); // prend la première lettre de chaque mot
-            }
+        //Affiche le rôle de l'API
+        try {
+            LlmInteraction interaction = jsonUtilPourGemini.envoyerRequete(question);
+            this.reponse = interaction.reponseExtraite();
+            this.texteRequeteJson = interaction.texteRequeteJson();
+            this.texteReponseJson = interaction.texteReponseJson();
+        } catch (Exception e) {
+            FacesMessage message =
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Problème de connexion avec l'API du LLM",
+                            "Problème de connexion avec l'API du LLM : " + e.getMessage());
+            facesContext.addMessage(null, message);
         }
-
-        this.reponse = acronym.toString() + "||";
-
-        if (this.conversation.isEmpty()) {
-            this.reponse = "||" + systemRole.toUpperCase(Locale.FRENCH) + "\n" + this.reponse;
-            this.systemRoleChangeable = false;
-        }
-
         afficherConversation();
         return null;
     }
@@ -165,7 +209,7 @@ public class Bb implements Serializable {
                 If the user type an English text, you translate it into French.
                 If the text contains only one to three words, give some examples of usage of these words in English.
                 """;
-        // 1er argument : la valeur du rôle, 2ème argument : le libellé du rôle
+        //le 1er argument : la valeur du rôle, 2ème argument : le libellé du rôle
         listeSystemRoles.add(new SelectItem(role, "Traducteur Anglais-Français"));
         role = """
                 Your are a travel guide. If the user type the name of a country or of a town,
