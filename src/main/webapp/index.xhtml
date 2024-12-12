@@ -13,12 +13,11 @@
     <f:view>
         <h:messages errorStyle="color: red" showDetail="true" showSummary="false"/>
         <h:form id="form">
-            <h:outputLabel for="apiRole" value="Rôle de l'API :" />
-            <h:selectOneMenu id="apiRole" value="#{chatBean.role}" disabled="#{!chatBean.newChat}">
-                <f:selectItem itemValue="helpful assistant" itemLabel="Helpful Assistant"/>
-                <f:selectItem itemValue="traducteur anglais-français" itemLabel="Traducteur Anglais-Français"/>
-                <f:selectItem itemValue="guide touristique" itemLabel="Guide Touristique"/>
-            </h:selectOneMenu>
+            <p:outputLabel for="systemrole" value="Rôle de l'API : "/>
+            <p:selectOneMenu id="systemrole" value="#{bb.systemRole}" editable="true"
+                             disabled="#{! bb.systemRoleChangeable}">
+                <f:selectItems value="#{bb.systemRoles}"/>
+            </p:selectOneMenu>
             <h:outputText value="  "/>
             <h:commandButton value="Nouveau chat" action="#{bb.nouveauChat}" />
             <h:panelGrid id="paneltotal" columns="2" columnClasses="topAligned,topAligned">
@@ -38,13 +37,7 @@
                         </h:panelGroup>
                         <h:inputTextarea id="reponse" value="#{bb.reponse}" title="Réponse"
                                          cols="50" rows="15"/>
-
-                        <!-- Bouton pour activer/désactiver le mode debug -->
-                        <h:commandButton id="debugbutton" value="#{bb.debug?'Mode Normal':'Mode Debug'}"
-                                         action="#{bb.toggleDebug()}"/>
                     </h:panelGrid>
-
-                    <!-- Panel Debug -->
                     <h:panelGrid id="paneldebug" columns="1" rendered="#{bb.debug}">
                         <h:panelGroup>
                             <h:outputText value="JSON envoyé dans la requête :"/>
@@ -59,8 +52,9 @@
                         <h:inputTextarea id="jsonreponse" value="#{bb.texteReponseJson}" title="Réponse JSON"
                                          cols="50" rows="15" readonly="true"/>
                     </h:panelGrid>
+                    <h:commandButton id="debugbutton" value="#{bb.debug?'Mode Normal':'Mode Debug'}"
+                                     action="#{bb.toggleDebug()}"/>
                 </h:panelGrid>
-
                 <h:panelGrid id="paneldroit" columns="1" style="vertical-align: top;">
                     <h:panelGroup>
                         <h:outputText value="Conversation :"/>
